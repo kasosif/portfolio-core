@@ -19,6 +19,9 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->string('role')->default('CANDIDATE');
+            $table->foreignId('candidate_id')->index()->nullable();
+            $table->foreign('candidate_id')->on('candidates')->references('id')->cascadeOnDelete();
             $table->rememberToken();
             $table->timestamps();
         });

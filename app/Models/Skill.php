@@ -13,6 +13,7 @@ class Skill extends Model
     use HasFactory, HasPictures , HasTranslations;
 
     protected $guarded = [];
+    protected $hidden = ['pivot'];
 
     public function candidates(): BelongsToMany {
         return  $this->belongsToMany(Candidate::class,'candidate_skill', 'skill_id', 'candidate_id');

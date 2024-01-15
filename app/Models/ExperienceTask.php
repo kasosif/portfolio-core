@@ -6,15 +6,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class ContactRequest extends Model
+class ExperienceTask extends Model
 {
     use HasFactory;
 
+    protected $hidden = ['experience_id'];
     protected $guarded = [];
-    protected $hidden = ['candidate_id'];
 
-
-    public function candidate(): BelongsTo {
-        return $this->belongsTo(Candidate::class, 'candidate_id');
+    public function experience(): BelongsTo {
+        return $this->belongsTo(Experience::class, 'experience_id');
     }
 }

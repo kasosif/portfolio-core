@@ -23,6 +23,7 @@ return new class extends Migration
             $table->date('date_of_birth')->nullable();
             $table->string('phone_number')->nullable();
             $table->longText('address')->nullable();
+            $table->boolean('activated')->default(false);
             $table->timestamps();
         });
     }

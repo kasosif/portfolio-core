@@ -13,19 +13,12 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('education', function (Blueprint $table) {
-            $table->id();
-            $table->date('start_date');
-            $table->date('end_date')->nullable();
-            $table->boolean('current')->default(false);
-            $table->string('degree');
-            $table->string('acknowledgement')->nullable();
-            $table->string('institute');
-            $table->string('institute_country');
-
+        Schema::create('candidate_language', function (Blueprint $table) {
             $table->foreignId('candidate_id')->index();
             $table->foreign('candidate_id')->on('candidates')->references('id')->cascadeOnDelete();
-            $table->timestamps();
+            $table->foreignId('language_id')->index();
+            $table->foreign('language_id')->on('languages')->references('id')->cascadeOnDelete();
+            $table->primary(['candidate_id', 'language_id']);
         });
     }
 
@@ -36,6 +29,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('education');
+        Schema::dropIfExists('candidate_language');
     }
 };

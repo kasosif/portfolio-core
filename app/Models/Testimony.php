@@ -13,6 +13,7 @@ class Testimony extends Model
     use HasFactory, HasPictures, HasTranslations;
 
     protected $guarded = [];
+    protected $hidden = ['candidate_id'];
 
     public function candidate(): BelongsTo {
         return $this->belongsTo(Candidate::class, 'candidate_id');
