@@ -15,6 +15,15 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers\Api' ], function () {
+    Route::group(['prefix' => 'cdn'], function () {
+        Route::group(['prefix' => 'pictures'], function () {
+            Route::get('{pictureId}','PictureController@publicAccess')->name('getPublicPicture');
+
+        });
+        Route::group(['prefix' => 'resumes'], function () {
+            Route::get('{resumeId}','CurriculumVitaeController@publicAccess')->name('getPublicResume');
+        });
+    });
     Route::group(['prefix' => 'auth'], function () {
         Route::post('login','AuthController@login')->name('login');
         Route::group(['middleware' => 'jwt'], function () {
@@ -33,6 +42,7 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers\Api' ], fun
             Route::get('{candidateId}','CandidateController@one')->name('getCandidate');
             Route::post('','CandidateController@add')->name('addCandidate');
             Route::delete('{candidateId}','CandidateController@delete')->name('deleteCandidate');
+            Route::put('set-default/{candidateId}','CandidateController@setDefault')->name('setDefaultCandidate');
         });
     });
     Route::group(['prefix' => 'activities', 'middleware' => 'jwt'], function () {
@@ -61,6 +71,14 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers\Api' ], fun
         Route::post('tasks','ExperienceController@addTask')->name('addExperienceTask');
         Route::delete('tasks/delete/{taskId}','ExperienceController@deleteTask')->name('deleteExperienceTask');
     });
+    Route::group(['prefix' => 'projects', 'middleware' => 'jwt'], function () {
+        Route::get('','ProjectController@list')->name('listProjects');
+        Route::post('','ProjectController@add')->name('addProject');
+        Route::put('{projectId}','ProjectController@update')->name('updateProject');
+        Route::delete('{projectId}','ProjectController@delete')->name('deleteProject');
+        Route::post('tasks','ProjectController@addTask')->name('addProjectTask');
+        Route::delete('tasks/delete/{taskId}','ProjectController@deleteTask')->name('deleteProjectTask');
+    });
     Route::group(['prefix' => 'languages', 'middleware' => ['jwt']], function () {
         Route::get('','LanguageController@list')->name('listLanguages');
         Route::group(['middleware' => 'role_check:admin'], function () {
@@ -88,6 +106,25 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers\Api' ], fun
         Route::post('','TestimonyController@add')->name('addTestimony');
         Route::put('{testimonyId}','TestimonyController@update')->name('updateTestimony');
         Route::delete('{testimonyId}','TestimonyController@delete')->name('deleteTestimony');
+    });
+    Route::group(['prefix' => 'translations', 'middleware' => 'jwt'], function () {
+        Route::post('translate', 'TranslationController@translate')->name('addTranslation');
+        Route::post('get-translatable-fields', 'TranslationController@getTranslatableFields')->name('getTranslatableFields');
+    });
+    Route::group(['prefix' => 'resumes', 'middleware' => 'jwt'], function () {
+        Route::get('', 'CurriculumVitaeController@list')->name('listResumes');
+        Route::post('', 'CurriculumVitaeController@add')->name('addResume');
+        Route::get('download/{resumeId}', 'CurriculumVitaeController@download')->name('downloadResume');
+        Route::delete('{resumeId}', 'CurriculumVitaeController@delete')->name('deleteResume');
+        Route::put('toggle-public/{resumeId}', 'CurriculumVitaeController@togglePublic')->name('togglePublicResume');
+    });
+    Route::group(['prefix' => 'pictures', 'middleware' => 'jwt'], function () {
+        Route::post('', 'PictureController@upload')->name('uploadPictures');
+        Route::get('download/{pictureId}', 'PictureController@download')->name('downloadPicture');
+        Route::delete('', 'PictureController@delete')->name('deletePictures');
+        Route::post('list-pictures', 'PictureController@list')->name('listPictures');
+        Route::put('set-main/{pictureId}', 'PictureController@setMain')->name('setPictureMain');
+        Route::put('toggle-public/{pictureId}', 'PictureController@togglePublic')->name('togglePublicPicture');
     });
     Route::group(['prefix' => 'contact-requests', 'middleware' => ['jwt','role_check:admin']], function () {
         Route::get('{contactRequestId?}','ContactRequestController@list')->name('listContactRequests');

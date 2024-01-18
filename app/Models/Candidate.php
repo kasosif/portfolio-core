@@ -15,6 +15,7 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
 class Candidate extends Model
 {
     use HasFactory, HasPictures, HasTranslations;
+    protected $with = ['pictures'];
 
     protected $guarded = [];
 
@@ -66,6 +67,10 @@ class Candidate extends Model
 
     public function user(): BelongsTo {
         return $this->belongsTo(User::class);
+    }
+
+    public function getCandidateIdAttribute() {
+        return $this->attributes['id'];
     }
 
 }

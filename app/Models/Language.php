@@ -21,4 +21,8 @@ class Language extends Model
     public function candidates(): BelongsToMany {
         return $this->belongsToMany(Candidate::class,'candidate_language', 'language_id', 'candidate_id');
     }
+
+    public function resumes(): HasMany {
+        return $this->hasMany(CurriculumVitae::class);
+    }
 }

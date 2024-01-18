@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Candidate;
 use App\Models\Experience;
-use App\Models\ExperienceTask;
+use App\Models\Tache;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -14,7 +14,7 @@ class ExperienceController extends Controller
 {
     public function list(): JsonResponse {
         $user = auth('api')->user();
-        $experiences = Experience::with('tasks')->query();
+        $experiences = Experience::with('tasks');
         $user->hasRole(['admin']) ? $experiences = $experiences->get() : $experiences = $experiences->where('candidate_id', $user->candidate_id)->get();
         return response()->json([
             "code" => 200,
@@ -177,20 +177,19 @@ class ExperienceController extends Controller
                 "result" => null
             ], 401);
         }
-        $experienceTask = ExperienceTask::create([
-            'description' => $request->get('description'),
-            'experience_id' => $experience->id
+        $experience->tasks()->create([
+            'description' => $request->get('description')
         ]);
         return response()->json([
             "code" => 200,
             "message" =>"Experience Task added successfully",
             "resultType" => "SUCCESS",
-            "result" => $experienceTask
+            "result" => null
         ]);
     }
     public function deleteTask(int $taskId): JsonResponse {
         $user = auth('api')->user();
-        $experienceTask = ExperienceTask::find($taskId);
+        $experienceTask = Tache::find($taskId);
         if (!$experienceTask) {
             return response()->json([
                 "code" => 404,
@@ -200,7 +199,7 @@ class ExperienceController extends Controller
             ], 404);
         }
 
-        if (!$user->hasRole(['admin']) && $experienceTask->experience->candidate_id !== $user->candidate_id) {
+        if (!$user->hasRole(['admin']) && $experienceTask->taskable->candidate_id !== $user->candidate_id) {
             return response()->json([
                 "code" => 401,
                 "message" =>"Unauthorized",

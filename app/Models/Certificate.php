@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Certificate extends Model
 {
     use HasFactory, HasPictures, HasTranslations;
-
+    protected $with = ['pictures'];
     protected $guarded = [];
     protected $hidden = ['candidate_id'];
 

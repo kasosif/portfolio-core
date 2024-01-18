@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Intervention\Image\Facades\Image;
 trait HasPictures {
-
     public function pictures():MorphMany
     {
         return $this->morphMany(Picture::class, 'galleriable');
@@ -26,19 +25,19 @@ trait HasPictures {
 
     public function addPicture(UploadedFile $picture, bool $isMain): void {
         $filename = Str::random(12). '.' . $picture->getClientOriginalExtension();
-        $path = storage_path('app/pictures/'.Str::lower(Str::plural(get_class($this))).'/' . $this->getKey() .'/'. $filename );
-        Image::make($picture)->save($path);
+        $path = 'pictures/'.$this->getTable().'/' . $this->getKey();
+        $picture->storeAs($path, $filename);
         $mainexists = $this->pictures()
             ->where('main',true)
             ->exists();
         $picture = new Picture([
             'main' => !$mainexists,
-            'path' => $path,
+            'path' => $path .'/'.$filename,
             'name' => $filename
         ]);
         $picture = $this->pictures()->save($picture);
         if ($isMain) {
-            $this->setMainPicture($picture);
+            $this->setMainPicture($picture->id);
         }
     }
     public function addPictures(array $pictures): void {
@@ -50,21 +49,22 @@ trait HasPictures {
     public function deletePicture(int $pictureId): void {
         $picture = $this->pictures()->where('id', $pictureId)->first();
         if ($picture) {
-            $path = storage_path('app/pictures/'.Str::lower(Str::plural(get_class($this))).'/' . $this->getKey() .'/'. $picture->name );
-            if ( file_exists($path) ) {
-                Storage::delete($path);
-            }
+            $isMain = $picture->main;
+            Storage::delete($picture->path);
             $picture->delete();
+            if ($isMain) {
+                $nextPicture = $this->pictures()->first();
+                if ($nextPicture) {
+                    $nextPicture->main = true;
+                    $nextPicture->save();
+                }
+            }
         }
 
     }
     public function deleteAllPictures(): void {
         foreach ($this->pictures()->get() as $picture) {
-            $path = storage_path('app/pictures/'.Str::lower(Str::plural(get_class($this))).'/' . $this->getKey() .'/'. $picture->name );
-            if ( file_exists($path) ) {
-                Storage::delete($path);
-            }
-            $picture->delete();
+            $this->deletePicture($picture->id);
         }
     }
 }

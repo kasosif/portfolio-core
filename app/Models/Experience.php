@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Experience extends Model
 {
@@ -20,7 +21,9 @@ class Experience extends Model
         return $this->belongsTo(Candidate::class, 'candidate_id');
     }
 
-    public function tasks(): HasMany {
-        return $this->hasMany(ExperienceTask::class);
+
+    public function tasks():MorphMany
+    {
+        return $this->morphMany(Tache::class, 'taskable');
     }
 }

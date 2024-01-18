@@ -13,12 +13,11 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('experience_tasks', function (Blueprint $table) {
+        Schema::create('taches', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('taskable_id');
+            $table->string('taskable_type');
             $table->longText('description');
-
-            $table->foreignId('experience_id')->index();
-            $table->foreign('experience_id')->on('experiences')->references('id')->cascadeOnDelete();
             $table->timestamps();
         });
     }
@@ -30,6 +29,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('experience_tasks');
+        Schema::dropIfExists('taches');
     }
 };

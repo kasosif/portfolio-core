@@ -320,4 +320,25 @@ class CandidateController extends Controller
             "result" => $skills
         ]);
     }
+
+    public function setDefault(int $candidateId) {
+        $candidate = Candidate::find($candidateId);
+        if (!$candidate) {
+            return response()->json([
+                "code" => 404,
+                "message" =>"Candidate not found",
+                "resultType" => "ERROR",
+                "result" => null
+            ], 404);
+        }
+        Candidate::query()->update(['activated' => false]);
+        $candidate->activated = true;
+        $candidate->save();
+        return response()->json([
+            "code" => 200,
+            "message" =>"Candidate set as default successfully",
+            "resultType" => "SUCCESS",
+            "result" => null
+        ]);
+    }
 }
