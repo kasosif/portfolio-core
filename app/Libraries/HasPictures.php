@@ -15,7 +15,11 @@ trait HasPictures {
 
     public function picture(): object | null
     {
-        return $this->pictures()->where('main', true)->first();
+        return $this->pictures()->where('main', true)->where('public',true)->first();
+    }
+
+    public function getPictureUrlAttribute() {
+            return $this->picture() ? $this->picture()->public_url: null;
     }
 
     public function setMainPicture(int $pictureId): void {
@@ -33,7 +37,8 @@ trait HasPictures {
         $picture = new Picture([
             'main' => !$mainexists,
             'path' => $path .'/'.$filename,
-            'name' => $filename
+            'name' => $filename,
+            'public' => true
         ]);
         $picture = $this->pictures()->save($picture);
         if ($isMain) {
@@ -50,12 +55,12 @@ trait HasPictures {
         $picture = $this->pictures()->where('id', $pictureId)->first();
         if ($picture) {
             $isMain = $picture->main;
-            Storage::delete($picture->path);
             $picture->delete();
             if ($isMain) {
                 $nextPicture = $this->pictures()->first();
                 if ($nextPicture) {
                     $nextPicture->main = true;
+                    $nextPicture->public = true;
                     $nextPicture->save();
                 }
             }

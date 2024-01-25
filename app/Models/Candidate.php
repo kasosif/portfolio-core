@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Libraries\HasDeletingProcesses;
 use App\Libraries\HasPictures;
 use App\Libraries\HasTranslations;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -14,8 +15,9 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
 
 class Candidate extends Model
 {
-    use HasFactory, HasPictures, HasTranslations;
-    protected $with = ['pictures'];
+    use HasFactory, HasPictures, HasTranslations, HasDeletingProcesses;
+    protected $with = ['pictures', 'socialAccounts'];
+    protected $appends = ['picture_url'];
 
     protected $guarded = [];
 
@@ -50,7 +52,7 @@ class Candidate extends Model
     }
 
     public function skills(): BelongsToMany {
-        return $this->belongsToMany(Skill::class,'candidate_skill', 'candidate_id', 'skill_id');
+        return $this->belongsToMany(Skill::class,'candidate_skill', 'candidate_id', 'skill_id')->withPivot('percentage');
     }
 
     public function projects(): HasMany {

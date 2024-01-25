@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Support\Facades\Storage;
 
 class Picture extends Model
 {
@@ -14,6 +15,14 @@ class Picture extends Model
     protected $hidden = ['galleriable_id', 'galleriable_type', 'created_at','updated_at','path'];
     protected $appends = ['url','public_url'];
     protected $casts = ['main' => 'boolean', 'public' => 'boolean'];
+
+    public static function boot()
+    {
+        parent::boot();
+        self::deleting(function ($item) {
+            Storage::delete($item->path);
+        });
+    }
 
     /**
      * Get the parent commentable model (post or video).

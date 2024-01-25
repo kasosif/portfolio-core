@@ -28,6 +28,7 @@ class ActivityController extends Controller
         $validator = Validator::make($request->all(), [
             'title' => 'required',
             'description' => 'required',
+            'draft' => 'nullable|boolean',
             'candidateId' => $user->hasRole(['admin']) ? 'required' : ''
         ]);
         if ($validator->fails()) {
@@ -51,6 +52,7 @@ class ActivityController extends Controller
         $activity = Activity::create([
             'title' => $request->get('title'),
             'description' => $request->get('description'),
+            'draft' => $request->get('draft') ?? false,
             'candidate_id' => $candidateId
         ]);
         return response()->json([
@@ -73,6 +75,7 @@ class ActivityController extends Controller
         }
         $validator = Validator::make($request->all(), [
             'title' => 'nullable',
+            'draft' => 'nullable|boolean',
             'description' => 'nullable'
         ]);
         if ($validator->fails()) {
@@ -91,7 +94,10 @@ class ActivityController extends Controller
                 "result" => null
             ], 401);
         }
-        $activity->update($request->only('title', 'description'));
+        if ($request->has('title') && $request->get('title') != null) $activity->title = $request->get('title');
+        if ($request->has('description') && $request->get('description') != null) $activity->description = $request->get('description');
+        if ($request->has('draft') && $request->get('draft') !== null) $activity->draft = $request->get('draft');
+        $activity->save();
         return response()->json([
             "code" => 200,
             "message" =>"Activity updated successfully",

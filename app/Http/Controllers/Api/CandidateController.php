@@ -8,9 +8,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Candidate;
 use App\Models\Language;
 use App\Models\Skill;
+use App\Models\Translation;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
@@ -84,6 +86,8 @@ class CandidateController extends Controller
             'candidate_id' => $candidate->id,
             'password' => Hash::make('12345')
         ]);
+        $language = Language::where('code','=', 'en')->first();
+        $candidate->languages()->attach($language->id);
         return response()->json([
             "code" => 200,
             "message" =>"Candidate added successfully",
@@ -178,7 +182,7 @@ class CandidateController extends Controller
             ], 404);
         }
         $language = Language::where('code','=', $request->get('code'))->first();
-        if (!$language) {
+        if (!$language || $language->code === 'en') {
             return response()->json([
                 "code" => 404,
                 "message" =>"Language not found",
@@ -186,8 +190,17 @@ class CandidateController extends Controller
                 "result" => null
             ], 404);
         }
-        $languageExists = $candidate->languages()->where('language_id', $language->id)->exists();
-        if ($languageExists) $candidate->languages()->detach($language->id);
+        $languageExists = $candidate->languages()->where('language_id','=', $language->id)->first();
+        //delete all userTranslations for the language
+        if ($languageExists) {
+            $languageTranslations = Translation::where('language_id', $language->id)->get();
+            foreach ($languageTranslations as $languageTranslation) {
+                if ($languageTranslation->translatable->candidate_id === $candidate->id) {
+                    $languageTranslation->delete();
+                }
+            }
+            $candidate->languages()->detach($language->id);
+        }
         return response()->json([
             "code" => 200,
             "message" =>"Language deleted from candidate successfully",
@@ -221,6 +234,7 @@ class CandidateController extends Controller
         $validator = Validator::make($request->all(), [
             'candidateId' => $user->hasRole(['admin']) ? 'required' : 'nullable',
             'skillId' => 'required',
+            'percentage' => 'nullable|integer|min:1|max:100'
         ]);
         if ($validator->fails()) {
             return response()->json([
@@ -250,7 +264,14 @@ class CandidateController extends Controller
             ], 404);
         }
         $skillExists = $candidate->skills()->where('skill_id', $skill->id)->exists();
-        if (!$skillExists) $candidate->skills()->attach($skill->id);
+        if ($skillExists) {
+            $candidate->skills()->detach($skill->id);
+        }
+        DB::table('candidate_skill')->insert([
+            'candidate_id' => $candidate->id,
+            'skill_id' => $skill->id,
+            'percentage' => $request->get('percentage') ?? null,
+        ]);
         return response()->json([
             "code" => 200,
             "message" =>"Skill added to candidate successfully",

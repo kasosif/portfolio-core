@@ -29,6 +29,7 @@ class CertificateController extends Controller
             'title' => 'required',
             'number' => 'nullable',
             'issuer' => 'required',
+            'draft' => 'nullable|boolean',
             'candidateId' => $user->hasRole(['admin']) ? 'required' : '',
         ]);
         if ($validator->fails()) {
@@ -54,6 +55,7 @@ class CertificateController extends Controller
             'title' => $request->get('title'),
             'number' => $request->get('number'),
             'issuer' => $request->get('issuer'),
+            'draft' => $request->get('draft') ?? false,
             'candidate_id' => $candidateId
         ]);
         return response()->json([
@@ -78,7 +80,8 @@ class CertificateController extends Controller
             'date' => 'nullable|date',
             'title' => 'nullable',
             'number' => 'nullable',
-            'issuer' => 'nullable'
+            'issuer' => 'nullable',
+            'draft' => 'nullable|boolean'
         ]);
         if ($validator->fails()) {
             return response()->json([
@@ -96,7 +99,12 @@ class CertificateController extends Controller
                 "result" => null
             ], 401);
         }
-        $certificate->update($request->only('date', 'title', 'number', 'issuer'));
+        if ($request->has('date') && $request->get('date') != null) $certificate->date = $request->get('date');
+        if ($request->has('title') && $request->get('title') != null) $certificate->title = $request->get('title');
+        if ($request->has('number') && $request->get('number') != null) $certificate->number = $request->get('number');
+        if ($request->has('issuer') && $request->get('issuer') != null) $certificate->issuer = $request->get('issuer');
+        if ($request->has('draft') && $request->get('draft') !== null) $certificate->draft = $request->get('draft');
+        $certificate->save();
         return response()->json([
             "code" => 200,
             "message" =>"Certificate updated successfully",

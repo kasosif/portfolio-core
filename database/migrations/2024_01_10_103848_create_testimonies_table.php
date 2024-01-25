@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('testimony_name');
             $table->string('testimony_job_description');
             $table->string('testimony_country');
+            $table->boolean('draft');
 
             $table->foreignId('candidate_id')->index();
             $table->foreign('candidate_id')->on('candidates')->references('id')->cascadeOnDelete();

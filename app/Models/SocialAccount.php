@@ -11,7 +11,7 @@ class SocialAccount extends Model
     use HasFactory;
 
     protected $guarded = [];
-    protected $hidden = ['candidate_id'];
+    protected $hidden = ['candidate_id','created_at','updated_at'];
 
     public function candidate(): BelongsTo {
         return $this->belongsTo(Candidate::class, 'candidate_id');

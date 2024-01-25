@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('company_country');
             $table->string('title');
             $table->longText('description')->nullable();
+            $table->boolean('draft');
 
             $table->foreignId('candidate_id')->index();
             $table->foreign('candidate_id')->on('candidates')->references('id')->cascadeOnDelete();

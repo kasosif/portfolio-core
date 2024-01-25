@@ -33,6 +33,7 @@ class ExperienceController extends Controller
             'company_country' => 'required',
             'title' => 'required',
             'description' => 'nullable',
+            'draft' => 'nullable|boolean',
             'candidateId' => $user->hasRole(['admin']) ? 'required' : '',
         ]);
         if ($validator->fails()) {
@@ -61,6 +62,7 @@ class ExperienceController extends Controller
             'company_country' => $request->get('company_country'),
             'title' => $request->get('title'),
             'description' => $request->get('description') ?? null,
+            'draft' => $request->get('draft') ?? false,
             'candidate_id' => $candidateId
         ]);
         return response()->json([
@@ -92,6 +94,7 @@ class ExperienceController extends Controller
             'company_name' =>  'nullable',
             'company_country' => 'nullable',
             'title' => 'nullable',
+            'draft' => 'nullable|boolean',
             'description' => 'nullable',
         ]);
         if ($validator->fails()) {
@@ -110,7 +113,14 @@ class ExperienceController extends Controller
                 "result" => null
             ], 401);
         }
-        $experience->update($request->only('start_date', 'end_date', 'current', 'company_name', 'company_country', 'title', 'description'));
+        if ($request->has('start_date') && $request->get('start_date') != null) $experience->start_date = $request->get('start_date');
+        if ($request->has('end_date') && $request->get('end_date') != null) $experience->end_date = $request->get('end_date');
+        if ($request->has('current') && $request->get('current') != null) $experience->current = $request->get('current');
+        if ($request->has('company_name') && $request->get('company_name') != null) $experience->company_name = $request->get('company_name');
+        if ($request->has('title') && $request->get('title') != null) $experience->title = $request->get('title');
+        if ($request->has('description') && $request->get('description') != null) $experience->description = $request->get('description');
+        if ($request->has('draft') && $request->get('draft') !== null) $experience->draft = $request->get('draft');
+        $experience->save();
         return response()->json([
             "code" => 200,
             "message" =>"Experience updated successfully",

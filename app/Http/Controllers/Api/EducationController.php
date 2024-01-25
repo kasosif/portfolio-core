@@ -32,6 +32,7 @@ class EducationController extends Controller
             'acknowledgement' => 'nullable',
             'institute' => 'required',
             'institute_country' => 'required',
+            'draft' => 'nullable|boolean',
             'candidateId' => $user->hasRole(['admin']) ? 'required' : '',
         ]);
         if ($validator->fails()) {
@@ -60,6 +61,7 @@ class EducationController extends Controller
             'acknowledgement' => $request->get('acknowledgement'),
             'institute' => $request->get('institute'),
             'institute_country' => $request->get('institute_country'),
+            'draft' => $request->get('draft') ?? false,
             'candidate_id' => $candidateId
         ]);
         return response()->json([
@@ -91,6 +93,7 @@ class EducationController extends Controller
             'degree' =>  'nullable',
             'acknowledgement' => 'nullable',
             'institute' => 'nullable',
+            'draft' => 'nullable|boolean',
             'institute_country' => 'nullable'
         ]);
         if ($validator->fails()) {
@@ -109,7 +112,15 @@ class EducationController extends Controller
                 "result" => null
             ], 401);
         }
-        $education->update($request->only('start_date', 'end_date', 'current', 'degree', 'acknowledgement', 'institute', 'institute_country'));
+        if ($request->has('start_date') && $request->get('start_date') != null) $education->start_date = $request->get('start_date');
+        if ($request->has('end_date') && $request->get('end_date') != null) $education->end_date = $request->get('end_date');
+        if ($request->has('current') && $request->get('current') != null) $education->current = $request->get('current');
+        if ($request->has('degree') && $request->get('degree') != null) $education->degree = $request->get('degree');
+        if ($request->has('acknowledgement') && $request->get('acknowledgement') != null) $education->acknowledgement = $request->get('acknowledgement');
+        if ($request->has('institute') && $request->get('institute') != null) $education->institute = $request->get('institute');
+        if ($request->has('institute_country') && $request->get('institute_country') != null) $education->institute_country = $request->get('institute_country');
+        if ($request->has('draft') && $request->get('draft') !== null) $education->draft = $request->get('draft');
+        $education->save();
         return response()->json([
             "code" => 200,
             "message" =>"Education updated successfully",

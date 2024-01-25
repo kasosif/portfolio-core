@@ -27,7 +27,7 @@ class PictureController extends Controller
             ], 404);
         }
         $validationArray = [
-            'addPictureTo' => ['required', 'regex:(activity|candidate|certificate|project|skill|testimony)'],
+            'addPictureTo' => ['required', 'regex:(activity|candidate|certificate|project|skill|testimony|language)'],
             'addPictureToId' => ['required','numeric']
         ];
         if (!$request->has('picture') && !$request->has('pictures')) {
@@ -108,7 +108,7 @@ class PictureController extends Controller
             ], 404);
         }
         $validator = Validator::make($request->all(), [
-            'deletePictureFrom' => ['required', 'regex:(activity|candidate|certificate|project|skill|testimony)'],
+            'deletePictureFrom' => ['required', 'regex:(activity|candidate|certificate|project|skill|testimony|language)'],
             'deleteAll' => ['required', 'boolean'],
             'deletePictureFromId' => ['required','numeric'],
             'pictureId' => ['required_if:deleteAll,false']
@@ -207,7 +207,7 @@ class PictureController extends Controller
             ], 404);
         }
         $validator = Validator::make($request->all(), [
-            'getPicturesOf' => ['required', 'regex:(activity|candidate|certificate|project|skill|testimony)'],
+            'getPicturesOf' => ['required', 'regex:(activity|candidate|certificate|project|skill|testimony|language)'],
             'getPicturesOfId' => ['required','numeric']
         ]);
         if ($validator->fails()) {
@@ -263,6 +263,14 @@ class PictureController extends Controller
                 "result" => null
             ]);
         }
+        if (!$picture->public) {
+            return response()->json([
+                "code" => 500,
+                "message" => "Picture can not be main because it's not public",
+                "resultType" => "ERROR",
+                "result" => null
+            ]);
+        }
         $instance = $picture->galleriable;
         if (!$user->hasRole(['admin']) && $instance->candidate_id !== $user->candidate_id) {
             return response()->json([
@@ -308,6 +316,16 @@ class PictureController extends Controller
                 "resultType" => "ERROR",
                 "result" => null
             ], 401);
+        }
+        if ($picture->public) {
+            if ($picture->main) {
+               return response()->json([
+                    "code" => 500,
+                    "message" =>  ucfirst(Str::singular($instance->getTable())).' picture can not be private , it\'s the main picture',
+                    "resultType" => "ERROR",
+                    "result" => null
+                ], 500);
+            }
         }
         $picture->public = !$picture->public;
         $picture->save();

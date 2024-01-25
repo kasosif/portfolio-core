@@ -30,6 +30,7 @@ class ProjectController extends Controller
             'description' =>  'required',
             'title' =>  'required',
             'link' =>  'nullable|url',
+            'draft' =>  'nullable|boolean',
             'candidateId' => $user->hasRole(['admin']) ? 'required' : '',
         ]);
         if ($validator->fails()) {
@@ -55,6 +56,7 @@ class ProjectController extends Controller
             'description' =>  $request->get('description'),
             'title' =>  $request->get('title'),
             'link' =>  $request->get('link'),
+            'draft' =>  $request->get('draft') ?? false,
             'candidate_id' => $candidateId
         ]);
         return response()->json([
@@ -80,6 +82,7 @@ class ProjectController extends Controller
             'description' =>  'nullable',
             'title' =>  'nullable',
             'link' =>  'nullable',
+            'draft' =>  'nullable|boolean',
         ]);
         if ($validator->fails()) {
             return response()->json([
@@ -101,6 +104,7 @@ class ProjectController extends Controller
         if ($request->has('description') && $request->get('description') != null) $project->description = $request->get('description');
         if ($request->has('title') && $request->get('title') != null) $project->title = $request->get('title');
         if ($request->has('link') && $request->get('link') != null) $project->link = $request->get('link');
+        if ($request->has('draft') && $request->get('draft') !== null) $project->draft = $request->get('draft');
         $project->save();
         return response()->json([
             "code" => 200,

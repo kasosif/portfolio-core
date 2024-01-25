@@ -18,7 +18,7 @@ return new class extends Migration
             $table->unsignedBigInteger('galleriable_id');
             $table->string('galleriable_type');
             $table->boolean('main');
-            $table->boolean('public')->default(false);
+            $table->boolean('public')->default(true);
             $table->string('path');
             $table->string('name');
             $table->timestamps();

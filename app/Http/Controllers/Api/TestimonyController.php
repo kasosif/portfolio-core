@@ -28,6 +28,7 @@ class TestimonyController extends Controller
             'testimony' => 'required',
             'testimony_name' => 'required',
             'testimony_job_description' => 'required',
+            'draft' => 'nullable|boolean',
             'testimony_country' => 'required',
             'candidateId' => $user->hasRole(['admin']) ? 'required' : '',
         ]);
@@ -54,6 +55,7 @@ class TestimonyController extends Controller
             'testimony_name' => $request->get('testimony_name'),
             'testimony_job_description' => $request->get('testimony_job_description'),
             'testimony_country' => $request->get('testimony_country'),
+            'draft' => $request->get('draft') ?? false,
             'candidate_id' => $candidateId
         ]);
         return response()->json([
@@ -78,6 +80,7 @@ class TestimonyController extends Controller
             'testimony' => 'nullable',
             'testimony_name' => 'nullable',
             'testimony_job_description' => 'nullable',
+            'draft' => 'nullable|boolean',
             'testimony_country' => 'nullable',
         ]);
         if ($validator->fails()) {
@@ -100,6 +103,7 @@ class TestimonyController extends Controller
         if ($request->has('testimony_name') && $request->get('testimony_name') != null) $testimony->testimony_name = $request->get('testimony_name');
         if ($request->has('testimony_job_description') && $request->get('testimony_job_description') != null) $testimony->testimony_job_description = $request->get('testimony_job_description');
         if ($request->has('testimony_country') && $request->get('testimony_country') != null) $testimony->testimony_country = $request->get('testimony_country');
+        if ($request->has('draft') && $request->get('draft') !== null) $testimony->draft = $request->get('draft');
         $testimony->save();
         return response()->json([
             "code" => 200,

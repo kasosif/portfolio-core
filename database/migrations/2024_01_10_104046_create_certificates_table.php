@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('title');
             $table->string('number')->nullable();
             $table->string('issuer');
+            $table->boolean('draft');
 
             $table->foreignId('candidate_id')->index();
             $table->foreign('candidate_id')->on('candidates')->references('id')->cascadeOnDelete();
