@@ -23,6 +23,7 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers\Api' ], fun
         Route::get('education','education')->name('education');
         Route::get('experiences','experiences')->name('experiences');
         Route::get('certificates','certificates')->name('certificates');
+        Route::get('resumes','resumes')->name('resumes');
         Route::get('skills','skills')->name('skills');
         Route::get('projects','projects')->name('projects');
         Route::get('project/{projectId}','project')->name('project');
@@ -31,7 +32,6 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers\Api' ], fun
     Route::group(['prefix' => 'cdn'], function () {
         Route::group(['prefix' => 'pictures'], function () {
             Route::get('{pictureId}','PictureController@publicAccess')->name('getPublicPicture');
-
         });
         Route::group(['prefix' => 'resumes'], function () {
             Route::get('{resumeId}','CurriculumVitaeController@publicAccess')->name('getPublicResume');

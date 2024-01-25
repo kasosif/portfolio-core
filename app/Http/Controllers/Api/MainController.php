@@ -8,6 +8,7 @@ use App\Models\Activity;
 use App\Models\Candidate;
 use App\Models\Certificate;
 use App\Models\ContactRequest;
+use App\Models\CurriculumVitae;
 use App\Models\Education;
 use App\Models\Experience;
 use App\Models\Language;
@@ -200,6 +201,15 @@ class MainController extends Controller
             "message" =>"Project retrieved successfully",
             "resultType" => "SUCCESS",
             "result" => $project
+        ]);
+    }
+    public function resumes(): JsonResponse {
+        $resumes = CurriculumVitae::where('candidate_id','=',$this->candidate->id)->where('public', true)->get();
+        return response()->json([
+            "code" => 200,
+            "message" =>"Resumes retrieved successfully",
+            "resultType" => "SUCCESS",
+            "result" => $resumes
         ]);
     }
     public function contactRequest(Request $request): JsonResponse {

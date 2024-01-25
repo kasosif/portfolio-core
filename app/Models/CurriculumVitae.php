@@ -26,7 +26,7 @@ class CurriculumVitae extends Model
 
     public function getPublicUrlAttribute(): string | null {
         if ($this->public) {
-            return url('api/v1/cdn/documents/'.$this->id);
+            return url('api/v1/cdn/resumes/'.$this->id);
         }
         return null;
     }
