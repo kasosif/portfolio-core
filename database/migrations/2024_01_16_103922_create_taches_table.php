@@ -20,6 +20,7 @@ return new class extends Migration
             $table->longText('description');
             $table->timestamps();
         });
+        Schema::enableForeignKeyConstraints();
     }
 
     /**

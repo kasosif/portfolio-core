@@ -17,7 +17,7 @@ return new class extends Migration
             $table->id();
             $table->string('path');
             $table->string('name');
-            $table->boolean('public')->default('true');
+            $table->boolean('public')->default(1);
             $table->foreignId('language_id')->index();
             $table->foreign('language_id')->on('languages')->references('id')->cascadeOnDelete();
             $table->foreignId('candidate_id')->index();
