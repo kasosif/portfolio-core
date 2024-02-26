@@ -19,7 +19,9 @@ trait HasPictures {
     }
 
     public function getPictureUrlAttribute() {
-            return $this->picture() ? $this->picture()->public_url: null;
+        $picture = $this->pictures->where('main', true)->where('public',true)->first();
+        return $picture ? $picture->public_url : null ;
+
     }
 
     public function setMainPicture(int $pictureId): void {

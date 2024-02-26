@@ -15,7 +15,7 @@ class Skill extends Model
     protected $with = ['pictures'];
     protected $guarded = [];
     protected $hidden = ['created_at','updated_at','pivot'];
-    protected $appends = ['picture_url','percentage'];
+    protected $appends = ['picture_url','percentage', 'icon_only'];
 
     public function candidates(): BelongsToMany {
         return  $this->belongsToMany(Candidate::class,'candidate_skill', 'skill_id', 'candidate_id');
@@ -26,5 +26,8 @@ class Skill extends Model
     }
     public function getPercentageAttribute() {
         return $this->pivot ? $this->pivot->percentage : null;
+    }
+    public function getIconOnlyAttribute() {
+        return $this->pivot ? $this->pivot->icon_only : null;
     }
 }

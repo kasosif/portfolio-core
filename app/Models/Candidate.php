@@ -52,7 +52,7 @@ class Candidate extends Model
     }
 
     public function skills(): BelongsToMany {
-        return $this->belongsToMany(Skill::class,'candidate_skill', 'candidate_id', 'skill_id')->withPivot('percentage');
+        return $this->belongsToMany(Skill::class,'candidate_skill', 'candidate_id', 'skill_id')->withPivot(['percentage','icon_only']);
     }
 
     public function projects(): HasMany {

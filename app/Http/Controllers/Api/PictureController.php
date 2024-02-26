@@ -27,7 +27,7 @@ class PictureController extends Controller
             ], 404);
         }
         $validationArray = [
-            'addPictureTo' => ['required', 'regex:(activity|candidate|certificate|project|skill|testimony|language)'],
+            'addPictureTo' => ['required', 'regex:(activity|candidate|certificate|project|skill|testimony|language|social_account)'],
             'addPictureToId' => ['required','numeric']
         ];
         if (!$request->has('picture') && !$request->has('pictures')) {
@@ -66,12 +66,12 @@ class PictureController extends Controller
                 "result" => $validator->errors()
             ], 415);
         }
-        $model = app('App\\Models\\'.ucfirst($request->get('addPictureTo')));
+        $model = app('App\\Models\\'.ucfirst(Str::camel($request->get('addPictureTo'))));
         $instance = $model::find($request->get('addPictureToId'));
         if (!$instance) {
             return response()->json([
                 "code" => 404,
-                "message" => ucfirst($request->get('addPictureTo'))." not found",
+                "message" => ucfirst(Str::camel($request->get('addPictureTo')))." not found",
                 "resultType" => "ERROR",
                 "result" => null
             ]);
@@ -108,7 +108,7 @@ class PictureController extends Controller
             ], 404);
         }
         $validator = Validator::make($request->all(), [
-            'deletePictureFrom' => ['required', 'regex:(activity|candidate|certificate|project|skill|testimony|language)'],
+            'deletePictureFrom' => ['required', 'regex:(activity|candidate|certificate|project|skill|testimony|language|social_account)'],
             'deleteAll' => ['required', 'boolean'],
             'deletePictureFromId' => ['required','numeric'],
             'pictureId' => ['required_if:deleteAll,false']
@@ -121,12 +121,12 @@ class PictureController extends Controller
                 "result" => $validator->errors()
             ], 415);
         }
-        $model = app('App\\Models\\'.ucfirst($request->get('deletePictureFrom')));
+        $model = app('App\\Models\\'.ucfirst(Str::camel($request->get('deletePictureFrom'))));
         $instance = $model::find($request->get('deletePictureFromId'));
         if (!$instance) {
             return response()->json([
                 "code" => 404,
-                "message" => ucfirst($request->get('deletePictureFrom'))." not found",
+                "message" => ucfirst(Str::camel($request->get('deletePictureFrom')))." not found",
                 "resultType" => "ERROR",
                 "result" => null
             ]);

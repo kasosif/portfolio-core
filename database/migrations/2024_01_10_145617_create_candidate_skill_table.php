@@ -19,6 +19,7 @@ return new class extends Migration
             $table->foreignId('skill_id')->index();
             $table->foreign('skill_id')->on('skills')->references('id')->cascadeOnDelete();
             $table->integer('percentage')->nullable();
+            $table->boolean('icon_only')->default(false);
             $table->primary(['candidate_id', 'skill_id']);
         });
     }

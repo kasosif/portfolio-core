@@ -24,7 +24,7 @@ trait HasTranslations {
         if ($translation) {
             $translationAttributes = $translation->getAttributes();
             foreach ($translationAttributes as $key => $value) {
-                if ($this->hasAttribute($key) && $this->attributes[$key] != null) {
+                if ($this->hasAttribute($key) && $this->attributes[$key] != null && $key != 'id') {
                     $this->setAttribute($key, $value);
                 }
             }

@@ -19,6 +19,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class MainController extends Controller
 {
@@ -38,18 +39,77 @@ class MainController extends Controller
             "result" => $spokenLanguages
         ]);
     }
-
     public function profile(): JsonResponse {
+        $translatedCandidate = Candidate::with([
+            'activities' => function($q) {
+                return $q->where('draft', false)->get();
+            },
+            'testimonies' => function($q) {
+                return $q->where('draft', false)->get();
+            },
+            'educations' => function($q) {
+                return $q->where('draft', false)->get();
+            },
+            'experiences' => function($q) {
+                return $q->where('draft', false)->get();
+            },
+            'certificates' => function($q) {
+                return $q->where('draft', false)->get();
+            },
+            'projects' => function($q) {
+                return $q->where('draft', false)->get();
+            },
+            'skills',
+            'languages'])->where('activated', true)->first();
+        if (request()->has('lang') && request()->get('lang') != null && request()->get('lang') !== 'en') {
+            $candidateLanguage = $this->candidate->languages()->where('code','=',request()->get('lang'))->first();
+            if ($candidateLanguage) {
+                $translatedCandidate = $translatedCandidate->translate($candidateLanguage->id);
+                $translatedCandidate->activities->map(function ($activity) use ($candidateLanguage) {
+                    return $activity->translate($candidateLanguage->id);
+                });
+                $translatedCandidate->testimonies->map(function ($testimony) use ($candidateLanguage) {
+                    return $testimony->translate($candidateLanguage->id);
+                });
+                $translatedCandidate->educations->map(function ($education) use ($candidateLanguage) {
+                    return $education->translate($candidateLanguage->id);
+                });
+                $translatedCandidate->experiences->map(function ($experience) use ($candidateLanguage) {
+                    return $experience->translate($candidateLanguage->id);
+                });
+                $translatedCandidate->certificates->map(function ($certificate) use ($candidateLanguage) {
+                    return $certificate->translate($candidateLanguage->id);
+                });
+                $translatedCandidate->skills->map(function ($skill) use ($candidateLanguage) {
+                    return $skill->translate($candidateLanguage->id);
+                });
+                $translatedCandidate->projects->map(function ($project) use ($candidateLanguage) {
+                    return $project->translate($candidateLanguage->id);
+                });
+            }
+        }
+
+        return response()->json([
+            "code" => 200,
+            "message" =>"Profile retrieved successfully",
+            "resultType" => "SUCCESS",
+            "result" => $translatedCandidate
+        ]);
+    }
+
+    public function miniProfile(): JsonResponse {
         $translatedCandidate = $this->candidate;
+
         if (request()->has('lang') && request()->get('lang') != null && request()->get('lang') !== 'en') {
             $candidateLanguage = $this->candidate->languages()->where('code','=',request()->get('lang'))->first();
             if ($candidateLanguage) {
                 $translatedCandidate = $this->candidate->translate($candidateLanguage->id);
             }
         }
+
         return response()->json([
             "code" => 200,
-            "message" =>"Profile retrieved successfully",
+            "message" =>"Mini profile retrieved successfully",
             "resultType" => "SUCCESS",
             "result" => $translatedCandidate
         ]);
@@ -192,7 +252,7 @@ class MainController extends Controller
             if ($candidateLanguage) {
                 $project = $project->translate($candidateLanguage->id);
                 $project->tasks->each(function ($task) use ($candidateLanguage) {
-                   return $task->translate($candidateLanguage->id);
+                    return $task->translate($candidateLanguage->id);
                 });
             }
         }
@@ -214,8 +274,7 @@ class MainController extends Controller
     }
     public function contactRequest(Request $request): JsonResponse {
         $validator = Validator::make($request->all(), [
-            'first_name' => 'required',
-            'last_name' => 'required',
+            'full_name' => 'required',
             'email' => 'required|email',
             'subject' => 'required',
             'message' => 'required',
@@ -230,8 +289,7 @@ class MainController extends Controller
         }
         $data = $validator->getData();
         $contactRequest = new ContactRequest([
-            'first_name' => $data['first_name'],
-            'last_name' => $data['last_name'],
+            'full_name' => $data['full_name'],
             'email' => $data['email'],
             'subject' => $data['subject'],
             'message' => $data['message'],
