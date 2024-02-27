@@ -96,6 +96,23 @@ class MainController extends Controller
             "result" => $translatedCandidate
         ]);
     }
+    public function title(): JsonResponse {
+        $translatedCandidate = $this->candidate;
+
+        if (request()->has('lang') && request()->get('lang') != null && request()->get('lang') !== 'en') {
+            $candidateLanguage = $this->candidate->languages()->where('code','=',request()->get('lang'))->first();
+            if ($candidateLanguage) {
+                $translatedCandidate = $this->candidate->translate($candidateLanguage->id);
+            }
+        }
+
+        return response()->json([
+            "code" => 200,
+            "message" =>"Title retrieved successfully",
+            "resultType" => "SUCCESS",
+            "result" => ['title' => $translatedCandidate->first_name . ' ' . $translatedCandidate->last_name . ' | ' .$translatedCandidate->job_description]
+        ]);
+    }
 
     public function miniProfile(): JsonResponse {
         $translatedCandidate = $this->candidate;

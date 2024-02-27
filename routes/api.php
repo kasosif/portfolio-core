@@ -16,6 +16,7 @@ use \App\Http\Controllers\Api\MainController;
 
 Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers\Api' ], function () {
     Route::controller(MainController::class)->as('main.')->prefix('main')->group(function () {
+        Route::get('title','title')->name('title');
         Route::get('profile','profile')->name('profile');
         Route::get('languages','spokenLanguages')->name('spokenLanguages');
         Route::get('miniProfile','miniProfile')->name('miniProfile');
