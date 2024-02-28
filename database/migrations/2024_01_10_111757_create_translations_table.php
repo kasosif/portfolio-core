@@ -30,6 +30,7 @@ return new class extends Migration
             $table->string('testimony_job_description')->nullable();
             $table->string('testimony_country')->nullable();
             $table->string('degree')->nullable();
+            $table->string('acknowledgement')->nullable();
             $table->string('institute')->nullable();
             $table->string('institute_country')->nullable();
             $table->string('company_name')->nullable();

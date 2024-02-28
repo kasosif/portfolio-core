@@ -58,6 +58,7 @@ trait HasTranslations {
             'testimony_job_description',
             'testimony_country',
             'degree',
+            'acknowledgement',
             'institute',
             'institute_country',
             'company_name',
