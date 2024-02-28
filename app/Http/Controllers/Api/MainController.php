@@ -30,15 +30,29 @@ class MainController extends Controller
         $this->candidate = Candidate::where('activated', true)->first();
     }
 
-    public function spokenLanguages(): JsonResponse {
-        $spokenLanguages = $this->candidate->languages;
+    public function metadata(): JsonResponse {
+        $translatedCandidate = $this->candidate;
+
+        if (request()->has('lang') && request()->get('lang') != null && request()->get('lang') !== 'en') {
+            $candidateLanguage = $this->candidate->languages()->where('code','=',request()->get('lang'))->first();
+            if ($candidateLanguage) {
+                $translatedCandidate = $this->candidate->translate($candidateLanguage->id);
+            }
+        }
+
         return response()->json([
             "code" => 200,
-            "message" =>"Spoken Languages retrieved successfully",
+            "message" =>"Metadata retrieved successfully",
             "resultType" => "SUCCESS",
-            "result" => $spokenLanguages
+            "result" => [
+                'title' => $translatedCandidate->first_name . ' ' . $translatedCandidate->last_name . ' | ' .$translatedCandidate->job_description,
+                'image' => $translatedCandidate->picture_url,
+                'description' => $translatedCandidate->about,
+                'languages' => $translatedCandidate->languages
+            ]
         ]);
     }
+
     public function profile(): JsonResponse {
         $translatedCandidate = Candidate::with([
             'activities' => function($q) {
@@ -96,23 +110,7 @@ class MainController extends Controller
             "result" => $translatedCandidate
         ]);
     }
-    public function title(): JsonResponse {
-        $translatedCandidate = $this->candidate;
 
-        if (request()->has('lang') && request()->get('lang') != null && request()->get('lang') !== 'en') {
-            $candidateLanguage = $this->candidate->languages()->where('code','=',request()->get('lang'))->first();
-            if ($candidateLanguage) {
-                $translatedCandidate = $this->candidate->translate($candidateLanguage->id);
-            }
-        }
-
-        return response()->json([
-            "code" => 200,
-            "message" =>"Title retrieved successfully",
-            "resultType" => "SUCCESS",
-            "result" => ['title' => $translatedCandidate->first_name . ' ' . $translatedCandidate->last_name . ' | ' .$translatedCandidate->job_description]
-        ]);
-    }
 
     public function miniProfile(): JsonResponse {
         $translatedCandidate = $this->candidate;
