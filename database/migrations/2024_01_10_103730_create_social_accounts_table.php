@@ -16,10 +16,6 @@ return new class extends Migration
         Schema::create('social_accounts', function (Blueprint $table) {
             $table->id();
             $table->string('type');
-            $table->string('name');
-            $table->string('link');
-            $table->foreignId('candidate_id')->index();
-            $table->foreign('candidate_id')->on('candidates')->references('id')->cascadeOnDelete();
             $table->timestamps();
         });
     }

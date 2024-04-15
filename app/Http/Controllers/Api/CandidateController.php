@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Candidate;
 use App\Models\Language;
 use App\Models\Skill;
+use App\Models\SocialAccount;
 use App\Models\Translation;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -337,6 +338,204 @@ class CandidateController extends Controller
         return response()->json([
             "code" => 200,
             "message" =>"Candidate Skills retrieved successfully",
+            "resultType" => "SUCCESS",
+            "result" => $skills
+        ]);
+    }
+
+    public function addSocialAccount(Request $request): JsonResponse {
+        $user = auth('api')->user();
+        $validator = Validator::make($request->all(), [
+            'candidateId' => $user->hasRole(['admin']) ? 'required' : 'nullable',
+            'socialAccountId' => 'required',
+            'link' => 'required'
+        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                "code" => 415,
+                "message" =>"Request not valid",
+                "resultType" => "ERROR",
+                "result" => $validator->errors()
+            ], 415);
+        }
+        $candidateId = $user->hasRole(['admin']) ? $request->get('candidateId') : $user->candidate_id;
+        $candidate = Candidate::find($candidateId);
+        if (!$candidate) {
+            return response()->json([
+                "code" => 404,
+                "message" =>"Candidate not found",
+                "resultType" => "ERROR",
+                "result" => null
+            ], 404);
+        }
+        $socialAccount = SocialAccount::find($request->get('socialAccountId'));
+        if (!$socialAccount) {
+            return response()->json([
+                "code" => 404,
+                "message" =>"SocialAccount not found",
+                "resultType" => "ERROR",
+                "result" => null
+            ], 404);
+        }
+        DB::table('candidate_social_account')->insert([
+            'candidate_id' => $candidate->id,
+            'social_account_id' => $socialAccount->id,
+            'link' => $request->get('link')
+        ]);
+        return response()->json([
+            "code" => 200,
+            "message" =>"SocialAccount added to candidate successfully",
+            "resultType" => "SUCCESS",
+            "result" => null
+        ]);
+    }
+
+    public function bulkCandidateSocials(Request $request): JsonResponse {
+        $user = auth()->user();
+        $validator = Validator::make($request->all(), [
+            'candidateId' => $user->hasRole(['admin']) ? 'required' : 'nullable',
+            'accounts' => 'nullable|array',
+            'accounts.*.socialAccountId' => 'required',
+            'accounts.*.link' => 'required',
+        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                "code" => 415,
+                "message" =>"Request not valid",
+                "resultType" => "ERROR",
+                "result" => $validator->errors()
+            ], 415);
+        }
+        $candidate = $user->hasRole(['admin']) ? Candidate::find($request->get('candidateId')) : Candidate::find($user->candidate_id);
+        if (!$candidate) {
+            return response()->json([
+                "code" => 404,
+                "message" =>"Candidate not found",
+                "resultType" => "ERROR",
+                "result" => null
+            ], 404);
+        }
+        $candidate->socialAccounts()->detach();
+        if ($request->has('accounts') && !empty($request->get('accounts'))) {
+            foreach ($request->get('accounts') as $account) {
+                DB::table('candidate_social_account')->insert([
+                    'candidate_id' => $candidate->id,
+                    'social_account_id' => $account['socialAccountId'],
+                    'link' => $account['link'],
+                ]);
+            }
+        }
+        return response()->json([
+            "code" => 200,
+            "message" =>"candidate SocialAccounts bulk updated successfully",
+            "resultType" => "SUCCESS",
+            "result" => null
+        ]);
+
+    }
+    public function bulkCandidateSkills(Request $request): JsonResponse {
+        $user = auth()->user();
+        $validator = Validator::make($request->all(), [
+            'candidateId' => $user->hasRole(['admin']) ? 'required' : 'nullable',
+            'skills' => 'nullable|array',
+            'skills.*.skillId' => 'required',
+            'skills.*.iconOnly' => 'required|boolean',
+            'skills.*.percentage' => 'required_if:skills.*.iconOnly,false',
+        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                "code" => 415,
+                "message" =>"Request not valid",
+                "resultType" => "ERROR",
+                "result" => $validator->errors()
+            ], 415);
+        }
+        $candidate = $user->hasRole(['admin']) ? Candidate::find($request->get('candidateId')) : Candidate::find($user->candidate_id);
+        if (!$candidate) {
+            return response()->json([
+                "code" => 404,
+                "message" =>"Candidate not found",
+                "resultType" => "ERROR",
+                "result" => null
+            ], 404);
+        }
+        $candidate->skills()->detach();
+        if ($request->has('skills') && !empty($request->get('skills'))) {
+            foreach ($request->get('skills') as $skill) {
+                DB::table('candidate_skill')->insert([
+                    'candidate_id' => $candidate->id,
+                    'skill_id' => $skill['skillId'],
+                    'percentage' => $skill['percentage'],
+                    'icon_only' => $skill['iconOnly']
+                ]);
+            }
+        }
+        return response()->json([
+            "code" => 200,
+            "message" =>"candidate Skills bulk updated successfully",
+            "resultType" => "SUCCESS",
+            "result" => null
+        ]);
+
+    }
+    public function deleteSocialAccount(Request $request): JsonResponse {
+        $user = auth('api')->user();
+        $validator = Validator::make($request->all(), [
+            'candidateId' => $user->hasRole(['admin']) ? 'required' : 'nullable',
+            'socialAccountId' => 'required',
+        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                "code" => 415,
+                "message" =>"Request not valid",
+                "resultType" => "ERROR",
+                "result" => $validator->errors()
+            ], 415);
+        }
+        $candidateId = $user->hasRole(['admin']) ? $request->get('candidateId') : $user->candidate_id;
+        $candidate = Candidate::find($candidateId);
+        if (!$candidate) {
+            return response()->json([
+                "code" => 404,
+                "message" =>"Candidate not found",
+                "resultType" => "ERROR",
+                "result" => null
+            ], 404);
+        }
+        $socialAccount = SocialAccount::find($request->get('socialAccountId'));
+        if (!$socialAccount) {
+            return response()->json([
+                "code" => 404,
+                "message" =>"SocialAccount not found",
+                "resultType" => "ERROR",
+                "result" => null
+            ], 404);
+        }
+        $socialAccountExists = $candidate->socialAccounts()->where('social_account_id', $socialAccount->id)->exists();
+        if ($socialAccountExists) $candidate->socialAccounts()->detach($socialAccount->id);
+        return response()->json([
+            "code" => 200,
+            "message" =>"SocialAccount deleted from candidate successfully",
+            "resultType" => "SUCCESS",
+            "result" => null
+        ]);
+    }
+    public function listCandidateSocialAccounts(Request $request): JsonResponse {
+        $user = auth('api')->user();
+        $candidateId = $user->candidate_id;
+        $candidate = Candidate::find($candidateId);
+        if (!$candidate) {
+            return response()->json([
+                "code" => 404,
+                "message" =>"Candidate not found",
+                "resultType" => "ERROR",
+                "result" => null
+            ], 404);
+        }
+        $skills = $candidate->socialAccounts;
+        return response()->json([
+            "code" => 200,
+            "message" =>"Candidate SocialAccounts retrieved successfully",
             "resultType" => "SUCCESS",
             "result" => $skills
         ]);

@@ -11,10 +11,25 @@ use Illuminate\Support\Facades\Validator;
 
 class EducationController extends Controller
 {
-    public function list(): JsonResponse {
+    public function list($candidateId = null): JsonResponse {
         $user = auth('api')->user();
-        $education = Education::query();
-        $user->hasRole(['admin']) ? $education = $education->get() : $education = $education->where('candidate_id', $user->candidate_id)->get();
+        if ($candidateId) {
+            if (!$user->hasRole(['admin'])) {
+                return response()->json([
+                    "code" => 401,
+                    "message" =>"Unauthorized",
+                    "resultType" => "ERROR",
+                    "result" => null
+                ], 401);
+            }
+            $education = Education::where('candidate_id', $candidateId)->orderBy('start_date', 'desc')->get();
+        } else {
+            if (!$user->hasRole(['admin'])) {
+                $education = Education::where('candidate_id', $user->candidate_id)->orderBy('start_date', 'desc')->get();
+            } else {
+                $education = Education::orderBy('start_date', 'desc')->get();
+            }
+        }
         return response()->json([
             "code" => 200,
             "message" =>"Education retrieved successfully",

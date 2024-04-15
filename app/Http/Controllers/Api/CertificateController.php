@@ -11,10 +11,25 @@ use Illuminate\Support\Facades\Validator;
 
 class CertificateController extends Controller
 {
-    public function list(): JsonResponse {
+    public function list($candidateId = null): JsonResponse {
         $user = auth('api')->user();
-        $certificates = Certificate::query();
-        $user->hasRole(['admin']) ? $certificates = $certificates->get() : $certificates = $certificates->where('candidate_id', $user->candidate_id)->get();
+        if ($candidateId) {
+            if (!$user->hasRole(['admin'])) {
+                return response()->json([
+                    "code" => 401,
+                    "message" =>"Unauthorized",
+                    "resultType" => "ERROR",
+                    "result" => null
+                ], 401);
+            }
+            $certificates = Certificate::where('candidate_id', $candidateId)->get();
+        } else {
+            if (!$user->hasRole(['admin'])) {
+                $certificates = Certificate::where('candidate_id', $user->candidate_id)->get();
+            } else {
+                $certificates = Certificate::all();
+            }
+        }
         return response()->json([
             "code" => 200,
             "message" =>"Certificates retrieved successfully",

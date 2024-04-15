@@ -12,16 +12,58 @@ use Illuminate\Support\Facades\Validator;
 
 class ProjectController extends Controller
 {
-    public function list(): JsonResponse {
+    public function list($candidateId = null): JsonResponse {
         $user = auth('api')->user();
-        $projects = Project::with('tasks');
-        $user->hasRole(['admin']) ? $projects = $projects->get() : $projects = $projects->where('candidate_id', $user->candidate_id)->get();
+        if ($candidateId) {
+            if (!$user->hasRole(['admin'])) {
+                return response()->json([
+                    "code" => 401,
+                    "message" =>"Unauthorized",
+                    "resultType" => "ERROR",
+                    "result" => null
+                ], 401);
+            }
+            $projects = Project::with('tasks')->where('candidate_id', $candidateId)->orderBy('date', 'desc')->get();
+        } else {
+            if (!$user->hasRole(['admin'])) {
+                $projects = Project::with('tasks')->where('candidate_id', $user->candidate_id)->orderBy('date', 'desc')->get();
+            } else {
+                $projects = Project::with('tasks')->orderBy('date', 'desc')->get();
+            }
+        }
         return response()->json([
             "code" => 200,
             "message" =>"Projects retrieved successfully",
             "resultType" => "SUCCESS",
             "result" => $projects
         ]);
+    }
+    public function single($projectId): JsonResponse {
+        $project = Project::find($projectId);
+        if (!$project) {
+            return response()->json([
+                "code" => 404,
+                "message" =>"Project not found",
+                "resultType" => "ERROR",
+                "result" => null
+            ], 404);
+        }
+        $user = auth('api')->user();
+        if (!$user->hasRole(['admin']) && $user->candidate_id != $project->candidate_id) {
+            return response()->json([
+                "code" => 401,
+                "message" =>"Unauthorized",
+                "resultType" => "ERROR",
+                "result" => null
+            ], 401);
+        }
+        return response()->json([
+            "code" => 200,
+            "message" =>"Project retrieved successfully",
+            "resultType" => "SUCCESS",
+            "result" => $project
+        ]);
+
     }
     public function add(Request $request): JsonResponse {
         $user = auth('api')->user();
@@ -66,7 +108,7 @@ class ProjectController extends Controller
             "result" => $project
         ]);
     }
-    public function update(Request $request, int $projectId): JsonResponse {
+    public function update(Request $request, string|int $projectId): JsonResponse {
         $user = auth('api')->user();
         $project = Project::find($projectId);
         if (!$project) {
@@ -178,6 +220,53 @@ class ProjectController extends Controller
         return response()->json([
             "code" => 200,
             "message" =>"Project Task added successfully",
+            "resultType" => "SUCCESS",
+            "result" => null
+        ]);
+    }
+    public function bulkTasks(Request $request): JsonResponse {
+        $user = auth('api')->user();
+        $validator = Validator::make($request->all(), [
+            'projectId' => 'required',
+            'tasks' => 'nullable|array',
+            'tasks.*.description' => 'required'
+        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                "code" => 415,
+                "message" =>"Request not valid",
+                "resultType" => "ERROR",
+                "result" => $validator->errors()
+            ], 415);
+        }
+        $project = Project::find($request->get('projectId'));
+        if (!$project) {
+            return response()->json([
+                "code" => 404,
+                "message" =>"Project not found",
+                "resultType" => "ERROR",
+                "result" => null
+            ], 404);
+        }
+        if (!$user->hasRole(['admin']) && $project->candidate_id !== $user->candidate_id) {
+            return response()->json([
+                "code" => 401,
+                "message" =>"Unauthorized",
+                "resultType" => "ERROR",
+                "result" => null
+            ], 401);
+        }
+        $project->tasks()->delete();
+        foreach ($request->get('tasks') as $task) {
+            Tache::create([
+                'taskable_id' => $project->id,
+                'taskable_type' => Project::class,
+                'description' => $task['description'],
+            ]);
+        }
+        return response()->json([
+            "code" => 200,
+            "message" =>"Project Tasks added successfully",
             "resultType" => "SUCCESS",
             "result" => null
         ]);

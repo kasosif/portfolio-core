@@ -12,10 +12,25 @@ use Illuminate\Support\Facades\Validator;
 
 class ExperienceController extends Controller
 {
-    public function list(): JsonResponse {
+    public function list($candidateId = null): JsonResponse {
         $user = auth('api')->user();
-        $experiences = Experience::with('tasks');
-        $user->hasRole(['admin']) ? $experiences = $experiences->get() : $experiences = $experiences->where('candidate_id', $user->candidate_id)->get();
+        if ($candidateId) {
+            if (!$user->hasRole(['admin'])) {
+                return response()->json([
+                    "code" => 401,
+                    "message" =>"Unauthorized",
+                    "resultType" => "ERROR",
+                    "result" => null
+                ], 401);
+            }
+            $experiences = Experience::where('candidate_id', $candidateId)->orderBy('start_date', 'desc')->get();
+        } else {
+            if (!$user->hasRole(['admin'])) {
+                $experiences = Experience::where('candidate_id', $user->candidate_id)->orderBy('start_date', 'desc')->get();
+            } else {
+                $experiences = Experience::orderBy('start_date', 'desc')->get();
+            }
+        }
         return response()->json([
             "code" => 200,
             "message" =>"Experiences retrieved successfully",

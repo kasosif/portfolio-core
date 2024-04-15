@@ -23,8 +23,8 @@ class Candidate extends Model
 
     protected $hidden = ['activated'];
 
-    public function socialAccounts(): HasMany {
-        return $this->hasMany(SocialAccount::class);
+    public function socialAccounts(): BelongsToMany {
+        return $this->belongsToMany(SocialAccount::class,'candidate_social_account', 'candidate_id', 'social_account_id')->withPivot(['link']);
     }
 
     public function resumes(): HasMany {
@@ -52,7 +52,9 @@ class Candidate extends Model
     }
 
     public function skills(): BelongsToMany {
-        return $this->belongsToMany(Skill::class,'candidate_skill', 'candidate_id', 'skill_id')->withPivot(['percentage','icon_only']);
+        return $this->belongsToMany(Skill::class,'candidate_skill', 'candidate_id', 'skill_id')
+            ->withPivot(['percentage','icon_only'])
+            ->using(SkillPivot::class);
     }
 
     public function projects(): HasMany {

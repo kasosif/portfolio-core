@@ -42,6 +42,8 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers\Api' ], fun
     Route::group(['prefix' => 'auth'], function () {
         Route::post('login','AuthController@login')->name('login');
         Route::group(['middleware' => 'jwt'], function () {
+            Route::get('me','AuthController@me')->name('me');
+            Route::put('update-profile','AuthController@updateProfile')->name('updateProfile');
             Route::get('logout','AuthController@logout')->name('logout');
         });
     });
@@ -52,6 +54,11 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers\Api' ], fun
         Route::post('add-skill','CandidateController@addSkill')->name('addSkillCandidate');
         Route::delete('delete-skill','CandidateController@deleteSkill')->name('deleteSkillCandidate');
         Route::get('get-skills','CandidateController@listCandidateSkills')->name('getCandidateSkills');
+        Route::post('add-social','CandidateController@addSocialAccount')->name('addSocialAccountCandidate');
+        Route::put('bulk-socials','CandidateController@bulkCandidateSocials')->name('bulkCandidateSocials');
+        Route::put('bulk-skills','CandidateController@bulkCandidateSkills')->name('bulkCandidateSkills');
+        Route::delete('delete-social','CandidateController@deleteSocialAccount')->name('deleteSocialAccountCandidate');
+        Route::get('get-socials','CandidateController@listCandidateSocialAccounts')->name('getCandidateSocialAccounts');
         Route::group(['middleware' => 'role_check:admin'], function () {
             Route::get('','CandidateController@list')->name('listCandidates');
             Route::get('{candidateId}','CandidateController@one')->name('getCandidate');
@@ -67,13 +74,13 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers\Api' ], fun
         Route::delete('{activityId}','ActivityController@delete')->name('deleteActivity');
     });
     Route::group(['prefix' => 'certificates', 'as' => 'backoffice.certificates.', 'middleware' => 'jwt'], function () {
-        Route::get('','CertificateController@list')->name('listCertificates');
+        Route::get('{candidateId?}','CertificateController@list')->name('listCertificates');
         Route::post('','CertificateController@add')->name('addCertificate');
         Route::put('{certificateId}','CertificateController@update')->name('updateCertificate');
         Route::delete('{certificateId}','CertificateController@delete')->name('deleteCertificate');
     });
     Route::group(['prefix' => 'education', 'as' => 'backoffice.education.', 'middleware' => 'jwt'], function () {
-        Route::get('','EducationController@list')->name('listEducation');
+        Route::get('{candidateId?}','EducationController@list')->name('listEducation');
         Route::post('','EducationController@add')->name('addEducation');
         Route::put('{educationId}','EducationController@update')->name('updateEducation');
         Route::delete('{educationId}','EducationController@delete')->name('deleteEducation');
@@ -89,9 +96,11 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers\Api' ], fun
     Route::group(['prefix' => 'projects', 'as' => 'backoffice.projects.', 'middleware' => 'jwt'], function () {
         Route::get('','ProjectController@list')->name('listProjects');
         Route::post('','ProjectController@add')->name('addProject');
+        Route::get('{projectId}','ProjectController@single')->name('singleProject');
         Route::put('{projectId}','ProjectController@update')->name('updateProject');
         Route::delete('{projectId}','ProjectController@delete')->name('deleteProject');
         Route::post('tasks','ProjectController@addTask')->name('addProjectTask');
+        Route::put('tasks/bulk','ProjectController@bulkTasks')->name('addProjectTasks');
         Route::delete('tasks/delete/{taskId}','ProjectController@deleteTask')->name('deleteProjectTask');
     });
     Route::group(['prefix' => 'languages', 'as' => 'backoffice.languages.', 'middleware' => ['jwt']], function () {
@@ -112,9 +121,10 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers\Api' ], fun
     });
     Route::group(['prefix' => 'socials', 'as' => 'backoffice.socials.', 'middleware' => 'jwt'], function () {
         Route::get('','SocialAccountController@list')->name('listSocialAccounts');
-        Route::post('','SocialAccountController@add')->name('addSocialAccount');
-        Route::put('{socialAccountId}','SocialAccountController@update')->name('updateSocialAccount');
-        Route::delete('{socialAccountId}','SocialAccountController@delete')->name('deleteSocialAccount');
+        Route::group(['middleware' => 'role_check:admin'], function () {
+            Route::post('', 'SocialAccountController@add')->name('addSocialAccount');
+            Route::delete('{socialAccountId}', 'SocialAccountController@delete')->name('deleteSocialAccount');
+        });
     });
     Route::group(['prefix' => 'testimonies', 'as' => 'backoffice.testimonies.', 'middleware' => 'jwt'], function () {
         Route::get('','TestimonyController@list')->name('listTestimonies');
@@ -127,7 +137,7 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers\Api' ], fun
         Route::post('get-translatable-fields', 'TranslationController@getTranslatableFields')->name('getTranslatableFields');
     });
     Route::group(['prefix' => 'resumes', 'as' => 'backoffice.resumes.', 'middleware' => 'jwt'], function () {
-        Route::get('', 'CurriculumVitaeController@list')->name('listResumes');
+        Route::get('{candidateId?}', 'CurriculumVitaeController@list')->name('listResumes');
         Route::post('', 'CurriculumVitaeController@add')->name('addResume');
         Route::get('download/{resumeId}', 'CurriculumVitaeController@download')->name('downloadResume');
         Route::delete('{resumeId}', 'CurriculumVitaeController@delete')->name('deleteResume');

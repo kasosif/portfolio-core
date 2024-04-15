@@ -17,18 +17,25 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class CurriculumVitaeController extends Controller
 {
-    public function list(): JsonResponse {
+    public function list($candidateId = null): JsonResponse {
         $user = auth('api')->user();
-        $candidate = Candidate::find($user->candidate_id);
-        if (!$candidate) {
-            return response()->json([
-                "code" => 404,
-                "message" =>"Candidate not found",
-                "resultType" => "ERROR",
-                "result" => null
-            ], 404);
+        if ($candidateId) {
+            if (!$user->hasRole(['admin'])) {
+                return response()->json([
+                    "code" => 401,
+                    "message" =>"Unauthorized",
+                    "resultType" => "ERROR",
+                    "result" => null
+                ], 401);
+            }
+            $resumes = CurriculumVitae::where('candidate_id', $candidateId)->get();
+        } else {
+            if (!$user->hasRole(['admin'])) {
+                $resumes = CurriculumVitae::where('candidate_id', $user->candidate_id)->get();
+            } else {
+                $resumes = CurriculumVitae::all();
+            }
         }
-        $resumes = $candidate->resumes;
         return response()->json([
             "code" => 200,
             "message" =>"Resumes retrieved successfully",
@@ -71,7 +78,7 @@ class CurriculumVitaeController extends Controller
             $existingResume->delete();
         }
         $resume = $request->file('resume');
-        $resumeName = strtolower($candidate->first_name).'_'.strtolower($candidate->last_name).'_resume.'.$resume->getClientOriginalExtension();
+        $resumeName = strtolower($candidate->first_name).'_'.strtolower($candidate->last_name).'_resume_'.strtolower($language->code).'.'.$resume->getClientOriginalExtension();
         $path = 'resumes/'.$candidate->id.'/'.$language->code;
         $resume->storeAs($path,$resumeName);
         $cv = CurriculumVitae::create([

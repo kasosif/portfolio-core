@@ -16,9 +16,9 @@ class PictureController extends Controller
 {
     public function upload(Request $request): JsonResponse {
         $user = auth('api')->user();
-        $candidate = Candidate::find($user->candidate_id);
+        $candidate = $user->hasRole(['admin']) ? $request->get('candidateId') : $user->candidate_id;
         $uploadMode = 'singleUpload';
-        if (!$candidate && !$user->hasRole(['admin'])) {
+        if (!$candidate) {
             return response()->json([
                 "code" => 404,
                 "message" =>"Candidate not found",
@@ -245,15 +245,6 @@ class PictureController extends Controller
     }
     public function setMain(int $pictureId) {
         $user = auth('api')->user();
-        $candidate = Candidate::find($user->candidate_id);
-        if (!$candidate && !$user->hasRole(['admin'])) {
-            return response()->json([
-                "code" => 404,
-                "message" =>"Candidate not found",
-                "resultType" => "ERROR",
-                "result" => null
-            ], 404);
-        }
         $picture = Picture::find($pictureId);
         if (!$picture) {
             return response()->json([
