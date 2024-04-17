@@ -16,6 +16,7 @@ class Experience extends Model
     use HasFactory , HasTranslations, Draftable, HasDeletingProcesses;
 
     protected $guarded = [];
+    protected $with = ['tasks'];
     protected $casts = ['current' => 'boolean', 'draft' => 'boolean'];
     protected $hidden = ['candidate_id'];
 
@@ -26,6 +27,6 @@ class Experience extends Model
 
     public function tasks():MorphMany
     {
-        return $this->morphMany(Tache::class, 'taskable');
+        return $this->morphMany(Task::class, 'taskable');
     }
 }

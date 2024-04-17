@@ -21,15 +21,16 @@ trait HasTranslations {
 
     public function translate(int $languageId): object | null {
         $translation = $this->translations()->where('language_id', $languageId)->first();
+        $toReturn = $this;
         if ($translation) {
             $translationAttributes = $translation->getAttributes();
             foreach ($translationAttributes as $key => $value) {
-                if ($this->hasAttribute($key) && $this->attributes[$key] != null && $key != 'id') {
-                    $this->setAttribute($key, $value);
+                if ($toReturn->hasAttribute($key) && $toReturn->attributes[$key] != null && $key != 'id') {
+                    $toReturn->setAttribute($key, $value);
                 }
             }
         }
-        return $this;
+        return $toReturn;
     }
 
     public function addTranslation(array $attributes, int $language_id): void {

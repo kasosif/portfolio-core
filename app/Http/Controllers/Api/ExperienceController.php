@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Candidate;
 use App\Models\Experience;
-use App\Models\Tache;
+use App\Models\Task;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -214,7 +214,7 @@ class ExperienceController extends Controller
     }
     public function deleteTask(int $taskId): JsonResponse {
         $user = auth('api')->user();
-        $experienceTask = Tache::find($taskId);
+        $experienceTask = Task::find($taskId);
         if (!$experienceTask) {
             return response()->json([
                 "code" => 404,

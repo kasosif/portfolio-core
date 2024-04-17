@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Candidate;
 use App\Models\Project;
-use App\Models\Tache;
+use App\Models\Task;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -258,7 +258,7 @@ class ProjectController extends Controller
         }
         $project->tasks()->delete();
         foreach ($request->get('tasks') as $task) {
-            Tache::create([
+            Task::create([
                 'taskable_id' => $project->id,
                 'taskable_type' => Project::class,
                 'description' => $task['description'],
@@ -273,7 +273,7 @@ class ProjectController extends Controller
     }
     public function deleteTask(int $taskId): JsonResponse {
         $user = auth('api')->user();
-        $projectTask = Tache::find($taskId);
+        $projectTask = Task::find($taskId);
         if (!$projectTask) {
             return response()->json([
                 "code" => 404,

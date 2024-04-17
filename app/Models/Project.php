@@ -25,6 +25,6 @@ class Project extends Model
 
     public function tasks():MorphMany
     {
-        return $this->morphMany(Tache::class, 'taskable');
+        return $this->morphMany(Task::class, 'taskable');
     }
 }

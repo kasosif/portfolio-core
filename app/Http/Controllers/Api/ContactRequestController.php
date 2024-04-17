@@ -9,34 +9,56 @@ use Illuminate\Http\Request;
 
 class ContactRequestController extends Controller
 {
-    public function list(int $contactRequestId = null): JsonResponse {
-        if ($contactRequestId) {
-            $contactRequest = ContactRequest::with(['candidate' => function($q) {
-                return $q->select('id','first_name','last_name','email','phone_number');
-            }])->where('id', $contactRequestId)->first();
-            if (!$contactRequest) {
+    public function list($candidateId = null): JsonResponse {
+        $user = auth('api')->user();
+        if ($candidateId) {
+            if (!$user->hasRole(['admin'])) {
                 return response()->json([
-                    "code" => 404,
-                    "message" =>"ContactRequest not found",
+                    "code" => 401,
+                    "message" =>"Unauthorized",
                     "resultType" => "ERROR",
                     "result" => null
-                ], 404);
+                ], 401);
             }
-            return response()->json([
-                "code" => 200,
-                "message" =>"Contact Request retrieved successfully",
-                "resultType" => "SUCCESS",
-                "result" => $contactRequest
-            ]);
+            $contactRequests = ContactRequest::where('candidate_id', $candidateId)->orderBy('created_at', 'desc')->get();
+        } else {
+            if (!$user->hasRole(['admin'])) {
+                $contactRequests = ContactRequest::where('candidate_id', $user->candidate_id)->orderBy('created_at', 'desc')->get();
+            } else {
+                $contactRequests = ContactRequest::orderBy('created_at', 'desc')->get();
+            }
         }
-        $contactRequests = ContactRequest::with(['candidate' => function($q) {
-            return $q->select('id','first_name','last_name','email','phone_number');
-        }])->get();
         return response()->json([
             "code" => 200,
             "message" =>"Contact Requests retrieved successfully",
             "resultType" => "SUCCESS",
             "result" => $contactRequests
+        ]);
+    }
+    public function one($requestId): JsonResponse {
+        $user = auth('api')->user();
+        $contactRequest = ContactRequest::find($requestId);
+        if (!$contactRequest) {
+            return response()->json([
+                "code" => 404,
+                "message" =>"Contact Request not found",
+                "resultType" => "ERROR",
+                "result" => null
+            ], 404);
+        }
+        if (!$user->hasRole(['admin']) && $contactRequest->candidate_id != $user->candidate_id) {
+            return response()->json([
+                "code" => 404,
+                "message" =>"Contact Request not found",
+                "resultType" => "ERROR",
+                "result" => null
+            ], 404);
+        }
+        return response()->json([
+            "code" => 200,
+            "message" =>"Contact Request retrieved successfully",
+            "resultType" => "SUCCESS",
+            "result" => $contactRequest
         ]);
     }
 }

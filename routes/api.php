@@ -22,7 +22,7 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers\Api' ], fun
         Route::get('miniProfile','miniProfile')->name('miniProfile');
         Route::get('activities','activities')->name('activities');
         Route::get('testimonies','testimonies')->name('testimonies');
-        Route::get('education','education')->name('education');
+        Route::get('educations','education')->name('education');
         Route::get('experiences','experiences')->name('experiences');
         Route::get('certificates','certificates')->name('certificates');
         Route::get('resumes','resumes')->name('resumes');
@@ -51,6 +51,7 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers\Api' ], fun
         Route::post('add-language','CandidateController@addLanguage')->name('addLanguageCandidate');
         Route::delete('delete-language','CandidateController@deleteLanguage')->name('deleteLanguageCandidate');
         Route::get('get-languages','CandidateController@listCandidateLanguages')->name('getCandidateLanguages');
+        Route::get('get-available-languages','CandidateController@listCandidateAvailableLanguages')->name('getCandidateAvailableLanguages');
         Route::post('add-skill','CandidateController@addSkill')->name('addSkillCandidate');
         Route::delete('delete-skill','CandidateController@deleteSkill')->name('deleteSkillCandidate');
         Route::get('get-skills','CandidateController@listCandidateSkills')->name('getCandidateSkills');
@@ -59,6 +60,7 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers\Api' ], fun
         Route::put('bulk-skills','CandidateController@bulkCandidateSkills')->name('bulkCandidateSkills');
         Route::delete('delete-social','CandidateController@deleteSocialAccount')->name('deleteSocialAccountCandidate');
         Route::get('get-socials','CandidateController@listCandidateSocialAccounts')->name('getCandidateSocialAccounts');
+        Route::get('get-stats','CandidateController@listCandidateStats')->name('getCandidateStats');
         Route::group(['middleware' => 'role_check:admin'], function () {
             Route::get('','CandidateController@list')->name('listCandidates');
             Route::get('{candidateId}','CandidateController@one')->name('getCandidate');
@@ -79,7 +81,7 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers\Api' ], fun
         Route::put('{certificateId}','CertificateController@update')->name('updateCertificate');
         Route::delete('{certificateId}','CertificateController@delete')->name('deleteCertificate');
     });
-    Route::group(['prefix' => 'education', 'as' => 'backoffice.education.', 'middleware' => 'jwt'], function () {
+    Route::group(['prefix' => 'educations', 'as' => 'backoffice.educations.', 'middleware' => 'jwt'], function () {
         Route::get('{candidateId?}','EducationController@list')->name('listEducation');
         Route::post('','EducationController@add')->name('addEducation');
         Route::put('{educationId}','EducationController@update')->name('updateEducation');
@@ -127,14 +129,15 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers\Api' ], fun
         });
     });
     Route::group(['prefix' => 'testimonies', 'as' => 'backoffice.testimonies.', 'middleware' => 'jwt'], function () {
-        Route::get('','TestimonyController@list')->name('listTestimonies');
-        Route::post('','TestimonyController@add')->name('addTestimony');
-        Route::put('{testimonyId}','TestimonyController@update')->name('updateTestimony');
-        Route::delete('{testimonyId}','TestimonyController@delete')->name('deleteTestimony');
+        Route::get('{candidateId?}','TestimonyController@list')->name('listTestimonials');
+        Route::post('','TestimonyController@add')->name('addTestimonial');
+        Route::put('{testimonyId}','TestimonyController@update')->name('updateTestimonial');
+        Route::delete('{testimonyId}','TestimonyController@delete')->name('deleteTestimonial');
     });
     Route::group(['prefix' => 'translations', 'as' => 'backoffice.translations.', 'middleware' => 'jwt'], function () {
         Route::post('translate', 'TranslationController@translate')->name('addTranslation');
         Route::post('get-translatable-fields', 'TranslationController@getTranslatableFields')->name('getTranslatableFields');
+        Route::post('get-translated-models', 'TranslationController@getTranslatedModels')->name('getTranslatedModels');
     });
     Route::group(['prefix' => 'resumes', 'as' => 'backoffice.resumes.', 'middleware' => 'jwt'], function () {
         Route::get('{candidateId?}', 'CurriculumVitaeController@list')->name('listResumes');
@@ -151,7 +154,8 @@ Route::group(['prefix' => 'v1', 'namespace' => 'App\Http\Controllers\Api' ], fun
         Route::put('set-main/{pictureId}', 'PictureController@setMain')->name('setPictureMain');
         Route::put('toggle-public/{pictureId}', 'PictureController@togglePublic')->name('togglePublicPicture');
     });
-    Route::group(['prefix' => 'contact-requests', 'as' => 'backoffice.contact-requests.', 'middleware' => ['jwt','role_check:admin']], function () {
-        Route::get('{contactRequestId?}','ContactRequestController@list')->name('listContactRequests');
+    Route::group(['prefix' => 'contact-requests', 'as' => 'backoffice.contact-requests.', 'middleware' => ['jwt']], function () {
+        Route::get('{candidateId?}','ContactRequestController@list')->name('listContactRequests');
+        Route::get('one/{requestId}','ContactRequestController@one')->name('getContactRequest');
     });
 });

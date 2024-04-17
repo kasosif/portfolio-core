@@ -8,8 +8,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
-class Tache extends Model
+class Task extends Model
 {
+
+    protected $table = "taches";
     use HasFactory, HasTranslations, HasDeletingProcesses;
 
     protected $guarded = [];

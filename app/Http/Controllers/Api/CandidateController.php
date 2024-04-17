@@ -6,9 +6,13 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Candidate;
+use App\Models\Certificate;
+use App\Models\ContactRequest;
 use App\Models\Language;
+use App\Models\Project;
 use App\Models\Skill;
 use App\Models\SocialAccount;
+use App\Models\Testimony;
 use App\Models\Translation;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -194,12 +198,12 @@ class CandidateController extends Controller
         $languageExists = $candidate->languages()->where('language_id','=', $language->id)->first();
         //delete all userTranslations for the language
         if ($languageExists) {
-            $languageTranslations = Translation::where('language_id', $language->id)->get();
-            foreach ($languageTranslations as $languageTranslation) {
-                if ($languageTranslation->translatable->candidate_id === $candidate->id) {
-                    $languageTranslation->delete();
-                }
-            }
+//            $languageTranslations = Translation::where('language_id', $language->id)->get();
+//            foreach ($languageTranslations as $languageTranslation) {
+//                if ($languageTranslation->translatable->candidate_id === $candidate->id) {
+//                    $languageTranslation->delete();
+//                }
+//            }
             $candidate->languages()->detach($language->id);
         }
         return response()->json([
@@ -222,6 +226,29 @@ class CandidateController extends Controller
             ], 404);
         }
         $languages = $candidate->languages;
+        return response()->json([
+            "code" => 200,
+            "message" =>"Candidate languages retrieved successfully",
+            "resultType" => "SUCCESS",
+            "result" => $languages
+        ]);
+    }
+
+    public function listCandidateAvailableLanguages(Request $request): JsonResponse {
+        $user = auth('api')->user();
+        $candidateId = $user->candidate_id;
+        $candidate = Candidate::find($candidateId);
+        if (!$candidate) {
+            return response()->json([
+                "code" => 404,
+                "message" =>"Candidate not found",
+                "resultType" => "ERROR",
+                "result" => null
+            ], 404);
+        }
+        $languages = Language::whereDoesntHave('candidates', function($q) use ($candidateId){
+            $q->where('candidate_id', $candidateId);
+        })->get();
         return response()->json([
             "code" => 200,
             "message" =>"Candidate languages retrieved successfully",
@@ -559,6 +586,27 @@ class CandidateController extends Controller
             "message" =>"Candidate set as default successfully",
             "resultType" => "SUCCESS",
             "result" => null
+        ]);
+    }
+
+    public function listCandidateStats(): JsonResponse {
+        $user = auth('api')->user();
+        $projectsCount = Project::where('candidate_id', $user->candidate_id)->count();
+        $certificatesCount = Certificate::where('candidate_id', $user->candidate_id)->count();
+        $testimonialsCount = Testimony::where('candidate_id', $user->candidate_id)->count();
+        $contactRequestsCount = ContactRequest::where('candidate_id', $user->candidate_id)->count();
+        $result = [
+            'projectsCount' => $projectsCount,
+            'certificatesCount' => $certificatesCount,
+            'testimonialsCount' => $testimonialsCount,
+            'contactRequestsCount' => $contactRequestsCount
+        ];
+
+        return response()->json([
+            "code" => 200,
+            "message" =>"Candidate stats retrieved successfully",
+            "resultType" => "SUCCESS",
+            "result" => $result
         ]);
     }
 }

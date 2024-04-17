@@ -11,13 +11,28 @@ use Illuminate\Support\Facades\Validator;
 
 class TestimonyController extends Controller
 {
-    public function list(): JsonResponse {
+    public function list($candidateId = null): JsonResponse {
         $user = auth('api')->user();
-        $testimonies = Testimony::query();
-        $user->hasRole(['admin']) ? $testimonies = $testimonies->get() : $testimonies = $testimonies->where('candidate_id', $user->candidate_id)->get();
+        if ($candidateId) {
+            if (!$user->hasRole(['admin'])) {
+                return response()->json([
+                    "code" => 401,
+                    "message" =>"Unauthorized",
+                    "resultType" => "ERROR",
+                    "result" => null
+                ], 401);
+            }
+            $testimonies = Testimony::where('candidate_id', $candidateId)->get();
+        } else {
+            if (!$user->hasRole(['admin'])) {
+                $testimonies = Testimony::where('candidate_id', $user->candidate_id)->get();
+            } else {
+                $testimonies = Testimony::all();
+            }
+        }
         return response()->json([
             "code" => 200,
-            "message" =>"Testimonies retrieved successfully",
+            "message" =>"Testimonials retrieved successfully",
             "resultType" => "SUCCESS",
             "result" => $testimonies
         ]);
@@ -60,7 +75,7 @@ class TestimonyController extends Controller
         ]);
         return response()->json([
             "code" => 200,
-            "message" =>"Testimony added successfully",
+            "message" =>"Testimonial added successfully",
             "resultType" => "SUCCESS",
             "result" => $testimony
         ]);
@@ -71,7 +86,7 @@ class TestimonyController extends Controller
         if (!$testimony) {
             return response()->json([
                 "code" => 404,
-                "message" =>"Testimony not found",
+                "message" =>"Testimonial not found",
                 "resultType" => "ERROR",
                 "result" => null
             ], 404);
@@ -107,7 +122,7 @@ class TestimonyController extends Controller
         $testimony->save();
         return response()->json([
             "code" => 200,
-            "message" =>"Testimony updated successfully",
+            "message" =>"Testimonial updated successfully",
             "resultType" => "SUCCESS",
             "result" => null
         ]);
@@ -118,7 +133,7 @@ class TestimonyController extends Controller
         if (!$testimony) {
             return response()->json([
                 "code" => 404,
-                "message" =>"Testimony not found",
+                "message" =>"Testimonial not found",
                 "resultType" => "ERROR",
                 "result" => null
             ], 404);
@@ -134,7 +149,7 @@ class TestimonyController extends Controller
         $testimony->delete();
         return response()->json([
             "code" => 200,
-            "message" =>"Testimony deleted successfully",
+            "message" =>"Testimonial deleted successfully",
             "resultType" => "SUCCESS",
             "result" => null
         ]);
