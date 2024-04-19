@@ -211,7 +211,8 @@ class TranslationController extends Controller
             "resultType" => "SUCCESS",
             "result" => [
                 'instances'=> $replicatedInstances,
-                ...compact( 'translatedInstances', 'translatableFields')
+                'translatedInstances' => $translatedInstances,
+                'translatableFields' => $translatableFields
             ]
         ]);
 
