@@ -293,11 +293,20 @@ class MainController extends Controller
             'email' => 'required|email',
             'subject' => 'required',
             'message' => 'required',
+            'captcha_token' => 'required'
         ]);
         if ($validator->fails()) {
             return response()->json([
                 "code" => 415,
                 "message" =>"Request not valid",
+                "resultType" => "ERROR",
+                "result" => $validator->errors()
+            ], 415);
+        }
+        if (!check_captcha($request->get('captcha_token'))) {
+            return response()->json([
+                "code" => 415,
+                "message" =>"Captcha Not Valid",
                 "resultType" => "ERROR",
                 "result" => $validator->errors()
             ], 415);
