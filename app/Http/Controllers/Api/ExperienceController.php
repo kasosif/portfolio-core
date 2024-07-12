@@ -135,6 +135,7 @@ class ExperienceController extends Controller
         if ($request->has('title') && $request->get('title') != null) $experience->title = $request->get('title');
         if ($request->has('description') && $request->get('description') != null) $experience->description = $request->get('description');
         if ($request->has('draft') && $request->get('draft') !== null) $experience->draft = $request->get('draft');
+        if ($request->has('current') && $request->get('current') !== null) $experience->current = $request->get('current');
         $experience->save();
         return response()->json([
             "code" => 200,
